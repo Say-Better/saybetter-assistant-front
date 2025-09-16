@@ -41,8 +41,8 @@ export function SpeechHistoryList({ speechHistory, onSpeak, onToggleFavorite }: 
       </div>
 
       {/* History List */}
-      <ScrollArea className="flex-1 min-h-0 [&_[data-slot=scroll-area-scrollbar]]:hidden">
-        <div className="space-y-2 pb-4">
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="space-y-2 pb-4 pr-3">
           {filteredHistory.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm ? '검색 결과가 없습니다' : '아직 발화 기록이 없습니다'}

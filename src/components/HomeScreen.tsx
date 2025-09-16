@@ -131,24 +131,26 @@ export function HomeScreen({
 
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - History and Suggestions */}
-        <div className="w-1/2 flex flex-col border-r">
+        <div className="w-1/2 flex flex-col border-r overflow-hidden">
           {/* Speech History */}
-          <Card className="h-[40vh] flex flex-col rounded-none border-0 border-b flex-none min-h-0">
+          <Card className="flex-1 flex flex-col rounded-none border-0 border-b overflow-hidden">
             <CardContent className="flex-1 min-h-0 overflow-hidden p-4">
-              <div className="h-full flex flex-col">
-                <h3 className="text-lg font-medium mb-2">발화 기록</h3>
-                <SpeechHistoryList
-                  speechHistory={speechHistory}
-                  onSpeak={handleSpeak}
-                  onToggleFavorite={onToggleFavorite}
-                />
+              <div className="h-full flex flex-col min-h-0">
+                <h3 className="text-lg font-medium mb-2 flex-shrink-0">발화 기록</h3>
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <SpeechHistoryList
+                    speechHistory={speechHistory}
+                    onSpeak={handleSpeak}
+                    onToggleFavorite={onToggleFavorite}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Suggestion Tabs */}
-          <Card className="flex-1 rounded-none border-0">
-            <CardContent className="h-full pt-[8px] pr-[8px] pb-[24px] pl-[8px] mx-[0px] my-[-1px] overflow-auto">
+          <Card className="flex-1 flex flex-col rounded-none border-0 overflow-hidden">
+            <CardContent className="flex-1 min-h-0 overflow-hidden pt-[8px] pr-[8px] pb-[24px] pl-[8px] mx-[0px] my-[-1px]">
               <SpeechSuggestionTabs
                 speechHistory={speechHistory}
                 aiSuggestions={aiSuggestions}
