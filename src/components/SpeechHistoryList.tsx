@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
 import { SpeechRecord } from '../App';
@@ -30,7 +30,7 @@ export function SpeechHistoryList({ speechHistory, onSpeak, onToggleFavorite }: 
   return (
     <div className="h-full flex flex-col">
       {/* Search */}
-      <div className="relative mb-3">
+      <div className="relative mb-1 flex-shrink-0">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="발화 기록 검색..."
@@ -41,8 +41,8 @@ export function SpeechHistoryList({ speechHistory, onSpeak, onToggleFavorite }: 
       </div>
 
       {/* History List */}
-      <ScrollArea className="flex-1">
-        <div className="space-y-2">
+      <ScrollArea className="flex-1 min-h-0 [&_[data-slot=scroll-area-scrollbar]]:hidden">
+        <div className="space-y-2 pb-4">
           {filteredHistory.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm ? '검색 결과가 없습니다' : '아직 발화 기록이 없습니다'}

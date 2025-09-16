@@ -27,7 +27,7 @@ export function SpeechSuggestionTabs({ speechHistory, aiSuggestions, onSpeak }: 
       </TabsList>
 
       <TabsContent value="favorites" className="flex-1 mt-4 mx-4">
-        <ScrollArea className="h-full">
+        <ScrollArea className="h-full [&_[data-slot=scroll-area-scrollbar]]:hidden">
           <div className="space-y-2 pb-4">
             {favoriteRecords.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -55,8 +55,8 @@ export function SpeechSuggestionTabs({ speechHistory, aiSuggestions, onSpeak }: 
       </TabsContent>
 
       <TabsContent value="ai" className="flex-1 mt-4 mx-4">
-        <ScrollArea className="h-full">
-          <div className="space-y-2 pb-4">
+        <ScrollArea className="h-full [&_[data-slot=scroll-area-scrollbar]]:hidden">
+          <div className="space-y-2 pb-24 pr-3">
             {aiSuggestions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />

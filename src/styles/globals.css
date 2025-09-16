@@ -187,3 +187,12 @@
 html {
   font-size: var(--font-size);
 }
+
+/* hide native scrollbars globally when applied */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -54,7 +54,7 @@ export function HomeScreen({
 
   const generateContextualSuggestions = (responseText: string) => {
     // Simple contextual suggestions - in real app, this would use AI
-    const suggestions = [];
+    const suggestions: string[] = [];
     
     if (responseText.includes('안녕')) {
       suggestions.push('안녕하세요', '반가워요', '오늘 기분 어때요?');
@@ -133,16 +133,16 @@ export function HomeScreen({
         {/* Left Panel - History and Suggestions */}
         <div className="w-1/2 flex flex-col border-r">
           {/* Speech History */}
-          <Card className="flex-1 rounded-none border-0 border-b">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">발화 기록</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-hidden">
-              <SpeechHistoryList
-                speechHistory={speechHistory}
-                onSpeak={handleSpeak}
-                onToggleFavorite={onToggleFavorite}
-              />
+          <Card className="h-[40vh] flex flex-col rounded-none border-0 border-b flex-none min-h-0">
+            <CardContent className="flex-1 min-h-0 overflow-hidden p-4">
+              <div className="h-full flex flex-col">
+                <h3 className="text-lg font-medium mb-2">발화 기록</h3>
+                <SpeechHistoryList
+                  speechHistory={speechHistory}
+                  onSpeak={handleSpeak}
+                  onToggleFavorite={onToggleFavorite}
+                />
+              </div>
             </CardContent>
           </Card>
 
