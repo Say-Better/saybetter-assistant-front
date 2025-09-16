@@ -4,6 +4,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { ScrollArea } from './ui/scroll-area';
 import { User } from '../App';
 import { ArrowLeft, Save, User as UserIcon } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
@@ -57,9 +58,9 @@ export function SettingsScreen({ user, onUpdateUser, onBack }: SettingsScreenPro
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b p-4">
+      <header className="bg-white border-b p-4 flex-shrink-0">
         <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={onBack}>
             <ArrowLeft className="h-5 w-5 mr-2" />
@@ -70,7 +71,9 @@ export function SettingsScreen({ user, onUpdateUser, onBack }: SettingsScreenPro
       </header>
 
       {/* Content */}
-      <div className="max-w-2xl mx-auto p-6">
+      <div className="flex-1 min-h-0">
+        <ScrollArea className="h-full">
+          <div className="max-w-2xl mx-auto p-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -92,7 +95,7 @@ export function SettingsScreen({ user, onUpdateUser, onBack }: SettingsScreenPro
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="text-lg h-12"
+                  className="text-lg h-12 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
                 />
               </div>
 
@@ -124,7 +127,7 @@ export function SettingsScreen({ user, onUpdateUser, onBack }: SettingsScreenPro
                   placeholder="예: 음성 발화가 어려워 텍스트로 의사소통을 합니다. 가족과의 일상 대화를 주로 사용할 예정입니다."
                   value={characteristics}
                   onChange={(e) => setCharacteristics(e.target.value)}
-                  className="min-h-32 text-base"
+                  className="min-h-32 text-base focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
                 />
               </div>
 
@@ -184,6 +187,8 @@ export function SettingsScreen({ user, onUpdateUser, onBack }: SettingsScreenPro
             </div>
           </CardContent>
         </Card>
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );
