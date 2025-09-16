@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
 import { SpeechRecord } from '../App';
-import { Volume2, Heart, Search } from 'lucide-react';
+import { Heart, Search } from 'lucide-react';
 import { Input } from './ui/input';
 
 interface SpeechHistoryListProps {
@@ -30,19 +30,19 @@ export function SpeechHistoryList({ speechHistory, onSpeak, onToggleFavorite }: 
   return (
     <div className="h-full flex flex-col">
       {/* Search */}
-      <div className="relative mb-1 flex-shrink-0">
+      <div className="relative mb-4 flex-shrink-0">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="발화 기록 검색..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+          className="pl-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:shadow-none"
         />
       </div>
 
       {/* History List */}
       <ScrollArea className="flex-1 min-h-0">
-        <div className="space-y-2 pb-4 pr-3">
+        <div className="space-y-2 pb-2 pr-3">
           {filteredHistory.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm ? '검색 결과가 없습니다' : '아직 발화 기록이 없습니다'}
@@ -51,7 +51,8 @@ export function SpeechHistoryList({ speechHistory, onSpeak, onToggleFavorite }: 
             filteredHistory.map((record) => (
               <div
                 key={record.id}
-                className="group p-3 rounded-lg border hover:bg-accent transition-colors"
+                className="group p-3 rounded-lg border hover:bg-accent transition-colors cursor-pointer"
+                onClick={() => onSpeak(record.text)}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
@@ -64,18 +65,13 @@ export function SpeechHistoryList({ speechHistory, onSpeak, onToggleFavorite }: 
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => onToggleFavorite(record.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFavorite(record.id);
+                      }}
                       className={`h-8 w-8 p-0 ${record.isFavorite ? 'text-red-500' : ''}`}
                     >
                       <Heart className={`h-4 w-4 ${record.isFavorite ? 'fill-current' : ''}`} />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onSpeak(record.text)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Volume2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
