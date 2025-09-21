@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AuthScreen } from './components/AuthScreen';
 import { OnboardingScreen } from './components/OnboardingScreen';
 import { HomeScreen } from './components/HomeScreen';
@@ -44,6 +44,7 @@ export default function App() {
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const startMicRecordingCallbackRef = useRef<(() => void) | null>(null);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -176,6 +177,30 @@ export default function App() {
     setSidebarOpen(false);
   };
 
+  const handleTTSStart = () => {
+    // TTS 시작 후 0.5초 딜레이로 마이크 녹음 시작
+    // 상태 업데이트를 기다리기 위해 약간의 딜레이 추가
+    setTimeout(() => {
+      // 콜백이 등록될 때까지 최대 2초간 기다림
+      const tryStartRecording = (attempts = 0) => {
+        // 콜백이 있으면 항상 실행 (첫 번째 발화도 포함)
+        if (startMicRecordingCallbackRef.current) {
+          setTimeout(() => {
+            startMicRecordingCallbackRef.current?.();
+          }, 500);
+        } else if (attempts < 20) { // 2초 동안 0.1초 간격으로 재시도
+          setTimeout(() => tryStartRecording(attempts + 1), 100);
+        }
+      };
+      
+      tryStartRecording();
+    }, 100); // 상태 업데이트를 위한 100ms 딜레이
+  };
+
+  const handleSetMicRecordingCallback = useCallback((callback: () => void) => {
+    startMicRecordingCallbackRef.current = callback;
+  }, []);
+
   const renderCurrentScreen = () => {
     switch (currentScreen) {
       case 'auth':
@@ -196,6 +221,8 @@ export default function App() {
             onEndConversation={handleEndConversation}
             onOpenSettings={() => setCurrentScreen('settings')}
             onOpenSidebar={() => setSidebarOpen(true)}
+            onTTSStart={handleTTSStart}
+            onSetMicRecordingCallback={handleSetMicRecordingCallback}
           />
         );
       case 'settings':

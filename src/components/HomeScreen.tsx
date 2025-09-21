@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { User, SpeechRecord, Conversation } from '../App';
 import { SpeechHistoryList } from './SpeechHistoryList';
 import { SpeechSuggestionTabs } from './SpeechSuggestionTabs';
 import { TextToSpeechInput } from './TextToSpeechInput';
 import { ConversationPanel } from './ConversationPanel';
-import { Menu, Settings, MessageSquare, Mic, MicOff } from 'lucide-react';
+import { Menu, Settings, MessageSquare, Mic } from 'lucide-react';
 
 interface HomeScreenProps {
   user: User;
@@ -21,6 +21,8 @@ interface HomeScreenProps {
   onEndConversation: () => void;
   onOpenSettings: () => void;
   onOpenSidebar: () => void;
+  onTTSStart: () => void;
+  onSetMicRecordingCallback: (callback: () => void) => void;
 }
 
 export function HomeScreen({
@@ -34,7 +36,9 @@ export function HomeScreen({
   onAddConversationMessage,
   onEndConversation,
   onOpenSettings,
-  onOpenSidebar
+  onOpenSidebar,
+  onTTSStart,
+  onSetMicRecordingCallback
 }: HomeScreenProps) {
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
 
@@ -99,6 +103,9 @@ export function HomeScreen({
       utterance.lang = 'ko-KR';
       utterance.rate = 0.8;
       window.speechSynthesis.speak(utterance);
+      
+      // TTS 시작 시 콜백 호출 (0.5초 딜레이 후 마이크 녹음 시작)
+      onTTSStart();
     }
   };
 
@@ -170,6 +177,7 @@ export function HomeScreen({
                 isListening={isListening}
                 onAddMessage={onAddConversationMessage}
                 onEndConversation={onEndConversation}
+                onSetMicRecordingCallback={onSetMicRecordingCallback}
               />
             ) : (
               <div className="h-full flex items-center justify-center text-muted-foreground">

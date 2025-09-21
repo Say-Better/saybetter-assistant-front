@@ -5,22 +5,60 @@ import { Badge } from './ui/badge';
 import { Conversation } from '../App';
 import { Mic, MicOff, PhoneOff, User, MessageSquare } from 'lucide-react';
 
+// Speech Recognition 타입 정의
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: (event: any) => void;
+  onerror: () => void;
+  onend: () => void;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: {
+      new (): SpeechRecognition;
+    };
+    webkitSpeechRecognition: {
+      new (): SpeechRecognition;
+    };
+  }
+}
+
 interface ConversationPanelProps {
   conversation: Conversation;
   isListening: boolean;
   onAddMessage: (text: string, type: 'user' | 'response') => void;
   onEndConversation: () => void;
+  onSetMicRecordingCallback: (callback: () => void) => void;
 }
 
 export function ConversationPanel({ 
   conversation, 
   isListening, 
   onAddMessage, 
-  onEndConversation 
+  onEndConversation,
+  onSetMicRecordingCallback
 }: ConversationPanelProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const isRecordingRef = useRef(isRecording);
+  const isListeningRef = useRef(isListening);
+
+  // Update ref when isRecording changes
+  useEffect(() => {
+    isRecordingRef.current = isRecording;
+  }, [isRecording]);
+
+  // Update ref when isListening changes
+  useEffect(() => {
+    isListeningRef.current = isListening;
+  }, [isListening]);
+
 
   // Initialize speech recognition
   useEffect(() => {
@@ -49,6 +87,30 @@ export function ConversationPanel({
       setRecognition(recognition);
     }
   }, [onAddMessage]);
+
+  // 마이크 녹음 시작 함수를 상위 컴포넌트에 등록
+  useEffect(() => {
+    // recognition이 있으면 항상 콜백 등록 (isListening 상관없이)
+    if (recognition) {
+      onSetMicRecordingCallback(() => {
+        // 항상 마이크 녹음 시작 시도 (첫 번째 발화 포함)
+        try {
+          if (isRecordingRef.current) {
+            recognition.stop();
+          }
+          setTimeout(() => {
+            // 콜백 실행 시점에 다시 한 번 대화 중인지 확인
+            if (isListeningRef.current) {
+              setIsRecording(true);
+              recognition.start();
+            }
+          }, 100);
+        } catch (error) {
+          console.error('마이크 녹음 시작 오류:', error);
+        }
+      });
+    }
+  }, [recognition]);
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
