@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ScrollArea } from './ui/scroll-area';
@@ -16,7 +15,7 @@ export function SpeechSuggestionTabs({ speechHistory, aiSuggestions, onSpeak }: 
 
   return (
     <Tabs defaultValue="favorites" className="h-full flex flex-col min-h-0">
-      <TabsList className="grid w-full grid-cols-2 mx-6 mt-4 flex-none">
+      <TabsList className="grid w-full grid-cols-2 mb-4 flex-none">
         <TabsTrigger value="favorites" className="flex items-center gap-2">
           <Heart className="h-4 w-4" />
           즐겨찾기
@@ -27,9 +26,9 @@ export function SpeechSuggestionTabs({ speechHistory, aiSuggestions, onSpeak }: 
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="favorites" className="flex-1 mt-4 ml-4 mr-6 min-h-0 overflow-hidden">
+      <TabsContent value="favorites" className="flex-1 min-h-0 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="space-y-2 pb-4 pr-3">
+          <div className="space-y-2 pb-4">
             {favoriteRecords.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Heart className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -55,9 +54,9 @@ export function SpeechSuggestionTabs({ speechHistory, aiSuggestions, onSpeak }: 
         </ScrollArea>
       </TabsContent>
 
-      <TabsContent value="ai" className="flex-1 mt-4 ml-4 mr-6 min-h-0 overflow-hidden">
+      <TabsContent value="ai" className="flex-1 min-h-0 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="space-y-2 pb-4 pr-3">
+          <div className="space-y-2 pb-4">
             {aiSuggestions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />

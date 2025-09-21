@@ -150,7 +150,7 @@ export function HomeScreen({
 
           {/* Suggestion Tabs */}
           <Card className="flex-1 flex flex-col rounded-none border-0 overflow-hidden">
-            <CardContent className="flex-1 min-h-0 overflow-hidden pt-[8px] pr-[8px] pb-[24px] pl-[8px] mx-[0px] my-[-1px]">
+            <CardContent className="flex-1 min-h-0 overflow-hidden p-4">
               <SpeechSuggestionTabs
                 speechHistory={speechHistory}
                 aiSuggestions={aiSuggestions}
