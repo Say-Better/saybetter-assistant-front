@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { ScrollArea } from './ui/scroll-area';
 import { Badge } from './ui/badge';
 import { Conversation } from '../App';
 import { Mic, MicOff, PhoneOff, User, MessageSquare } from 'lucide-react';
@@ -54,10 +53,11 @@ export function ConversationPanel({
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     if (scrollAreaRef.current) {
-      const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      }
+      setTimeout(() => {
+        if (scrollAreaRef.current) {
+          scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+        }
+      }, 100);
     }
   }, [conversation.messages]);
 
@@ -106,9 +106,17 @@ export function ConversationPanel({
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 p-0 flex flex-col">
+      <CardContent className="flex-1 p-0 flex flex-col min-h-0">
         {/* Messages */}
-        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+        <div 
+          className="flex-1 overflow-y-auto p-4 min-h-0 no-scrollbar" 
+          ref={scrollAreaRef}
+          style={{ 
+            maxHeight: 'calc(100vh - 200px)',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }}
+        >
           <div className="space-y-4">
             {conversation.messages.map((message) => (
               <div
@@ -142,7 +150,7 @@ export function ConversationPanel({
               </div>
             ))}
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Voice Recording Controls */}
         {isListening && (

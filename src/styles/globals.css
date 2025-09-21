@@ -190,9 +190,17 @@ html {
 
 /* hide native scrollbars globally when applied */
 .no-scrollbar::-webkit-scrollbar {
-  display: none;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar::-webkit-scrollbar-track {
+  display: none !important;
+}
+.no-scrollbar::-webkit-scrollbar-thumb {
+  display: none !important;
 }
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
 }
