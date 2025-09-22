@@ -8,6 +8,7 @@ import { Toaster } from './components/ui/sonner';
 
 export interface User {
   id: string;
+  memberNum: number | string;  // 로그인 응답에서 문자열로 올 수 있음
   name: string;
   characteristics: string;
   createdAt: Date;
@@ -46,11 +47,73 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const startMicRecordingCallbackRef = useRef<(() => void) | null>(null);
 
-  // API에서 대화 기록 불러오기
-  const loadConversationsFromAPI = async () => {
+  // API에서 즐겨찾기 불러오기
+  const loadBookmarksFromAPI = useCallback(async () => {
     try {
-      console.log('대화 기록 불러오기 시작: /api/conversation');
-      const response = await fetch('/api/conversation', {
+      if (!user) {
+        console.log('사용자가 로그인되어 있지 않아 즐겨찾기를 불러오지 않습니다.');
+        return;
+      }
+      
+      console.log('즐겨찾기 로드 시작 - 사용자 정보:', user);
+
+      const memberNum = typeof user.memberNum === 'string' ? parseInt(user.memberNum, 10) : user.memberNum;
+      console.log('즐겨찾기 불러오기 시작: /api/statements/' + memberNum + '/bookmark');
+      const response = await fetch(`/api/statements/${memberNum}/bookmark`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`즐겨찾기 불러오기 실패: ${response.status}`);
+      }
+
+      const apiBookmarks = await response.json();
+      console.log('API 즐겨찾기 응답:', apiBookmarks);
+      
+      // API 응답을 SpeechRecord 형식으로 변환
+      const formattedBookmarks: SpeechRecord[] = apiBookmarks
+        .filter((bookmark: any) => bookmark.bookmark === 1) // bookmark가 1인 것만 필터링
+        .map((bookmark: any) => ({
+          id: bookmark.statementNum?.toString() || Date.now().toString(),
+          text: bookmark.content || '',
+          timestamp: new Date(bookmark.createdAt || Date.now()),
+          isFavorite: true // 즐겨찾기에서 불러온 것이므로 항상 true
+        }));
+
+      // 기존 로컬 speechHistory와 병합 (즐겨찾기가 아닌 것만)
+      setSpeechHistory(prevHistory => {
+        const existingHistory = prevHistory.filter(record => !record.isFavorite);
+        const mergedHistory = [...formattedBookmarks, ...existingHistory];
+        
+        // localStorage에도 저장
+        localStorage.setItem('tts-app-speech-history', JSON.stringify(mergedHistory));
+        
+        return mergedHistory;
+      });
+      
+      console.log('즐겨찾기 불러오기 완료:', formattedBookmarks.length + '개');
+    } catch (error) {
+      console.error('즐겨찾기 불러오기 오류:', error);
+      // 오류 발생 시에도 기존 localStorage 데이터는 유지
+    }
+  }, [user]);
+
+  // API에서 대화 기록 불러오기
+  const loadConversationsFromAPI = useCallback(async () => {
+    try {
+      if (!user) {
+        console.log('사용자가 로그인되어 있지 않아 대화 기록을 불러오지 않습니다.');
+        return;
+      }
+      
+      console.log('대화 기록 로드 시작 - 사용자 정보:', user);
+
+      const memberNum = typeof user.memberNum === 'string' ? parseInt(user.memberNum, 10) : user.memberNum;
+      console.log('대화 기록 불러오기 시작: /api/conversation?memberNum=' + memberNum);
+      const response = await fetch(`/api/conversation?memberNum=${memberNum}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +158,7 @@ export default function App() {
         })));
       }
     }
-  };
+  }, [user]);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -108,8 +171,7 @@ export default function App() {
       setUser(userData);
       setCurrentScreen(userData ? 'home' : 'auth');
       
-      // 사용자가 로그인되어 있으면 API에서 대화 기록 불러오기
-      loadConversationsFromAPI();
+      // 사용자가 로그인되어 있으면 useEffect에서 API 호출할 예정
     } else {
       // 로그인되지 않은 경우에만 localStorage에서 대화 기록 불러오기
       const savedConversations = localStorage.getItem('tts-app-conversations');
@@ -135,6 +197,15 @@ export default function App() {
     }
   }, []);
 
+  // 사용자가 로그인/로그아웃될 때 API 데이터 로드
+  useEffect(() => {
+    if (user && user.memberNum) {
+      console.log('사용자 상태 변경됨, API 데이터 로드:', user.id, 'memberNum:', user.memberNum);
+      loadConversationsFromAPI();
+      loadBookmarksFromAPI();
+    }
+  }, [user?.id, user?.memberNum, loadConversationsFromAPI, loadBookmarksFromAPI]);
+
   // Save data to localStorage
   const saveUserData = (userData: User) => {
     localStorage.setItem('tts-app-user', JSON.stringify(userData));
@@ -153,8 +224,6 @@ export default function App() {
 
   const handleLogin = (userData: User) => {
     saveUserData(userData);
-    // 로그인 후 대화 기록 불러오기
-    loadConversationsFromAPI();
     setCurrentScreen('home');
   };
 
@@ -168,7 +237,8 @@ export default function App() {
       try {
         // 관심 주제 업데이트 API 호출
         if (preferSubject?.trim()) {
-          const response = await fetch(`/api/member/${user.id}/preferences`, {
+          const memberNum = typeof user.memberNum === 'string' ? parseInt(user.memberNum, 10) : user.memberNum;
+          const response = await fetch(`/api/member/${memberNum}/preferences`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
@@ -179,7 +249,7 @@ export default function App() {
           });
 
           console.log('관심 주제 업데이트 요청:', { 
-            memberNum: user.id, 
+            memberNum: memberNum, 
             preferSubject: preferSubject.trim() 
           });
 
@@ -215,11 +285,56 @@ export default function App() {
     saveSpeechHistory([newRecord, ...speechHistory]);
   };
 
-  const handleToggleFavorite = (id: string) => {
-    const updatedHistory = speechHistory.map(record =>
-      record.id === id ? { ...record, isFavorite: !record.isFavorite } : record
-    );
-    saveSpeechHistory(updatedHistory);
+  const handleToggleFavorite = async (id: string) => {
+    const record = speechHistory.find(r => r.id === id);
+    if (!record || !user) {
+      // 로컬에서만 업데이트
+      const updatedHistory = speechHistory.map(record =>
+        record.id === id ? { ...record, isFavorite: !record.isFavorite } : record
+      );
+      saveSpeechHistory(updatedHistory);
+      return;
+    }
+
+    try {
+      // 즐겨찾기 토글 PATCH API 호출
+      const newBookmarkValue = record.isFavorite ? 0 : 1; // 제거: 0, 추가: 1
+      console.log('즐겨찾기 토글 시도:', { 
+        statementNum: id, 
+        memberNum: user.memberNum, 
+        bookmark: newBookmarkValue 
+      });
+      
+      const response = await fetch(`/api/statements/${id}/bookmark`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookmark: newBookmarkValue
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('즐겨찾기 토글 실패:', response.status, errorText);
+        return;
+      }
+      console.log('즐겨찾기 토글 성공:', newBookmarkValue === 1 ? '추가' : '제거');
+
+      // API 호출 성공 시 로컬 상태 업데이트
+      const updatedHistory = speechHistory.map(record =>
+        record.id === id ? { ...record, isFavorite: !record.isFavorite } : record
+      );
+      saveSpeechHistory(updatedHistory);
+    } catch (error) {
+      console.error('즐겨찾기 토글 오류:', error);
+      // 에러 발생 시에도 로컬 상태는 업데이트
+      const updatedHistory = speechHistory.map(record =>
+        record.id === id ? { ...record, isFavorite: !record.isFavorite } : record
+      );
+      saveSpeechHistory(updatedHistory);
+    }
   };
 
   const handleStartConversation = (initialText: string) => {
@@ -263,13 +378,35 @@ export default function App() {
         return;
       }
       
+      // 데이터 검증
+      if (!user.memberNum || user.memberNum === 0) {
+        console.error('유효하지 않은 memberNum:', user.memberNum);
+        return;
+      }
+
+      if (!conversation.messages || conversation.messages.length === 0) {
+        console.error('저장할 메시지가 없습니다:', conversation.messages);
+        return;
+      }
+
       const requestBody = {
-        memberNum: parseInt(user.id || '0'),
+        memberNum: typeof user.memberNum === 'string' ? parseInt(user.memberNum, 10) : user.memberNum,
         contents: conversation.messages.map(message => ({
           content: message.text,
           speaker: message.type === 'user' ? 'M' : 'O'  // M: TTS(사용자 발화), O: 녹음(AI 응답)
         }))
       };
+      
+      console.log('사용자 정보 확인:', { 
+        userId: user.id,
+        memberNum: user.memberNum,
+        memberNumType: typeof user.memberNum
+      });
+      console.log('대화 정보 확인:', {
+        conversationId: conversation.id,
+        messageCount: conversation.messages.length,
+        messages: conversation.messages
+      });
       console.log('대화 저장 시작: /api/conversation/save', requestBody);
       console.log('전송할 contents 상세:', JSON.stringify(requestBody.contents, null, 2));
       

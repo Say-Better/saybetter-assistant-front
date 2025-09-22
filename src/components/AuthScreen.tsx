@@ -72,7 +72,8 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
         
         // 회원가입 성공 시 사용자 정보 생성
         const userData: User = {
-          id: data.user?.id || data.id || data.memberId || Date.now().toString(),
+          id: data.user?.id || data.id || data.memberId || name.trim(),
+          memberNum: parseInt(data.user?.memberNum || data.memberNum || data.id, 10) || 0,
           name: data.user?.name || data.name || data.memberName || name.trim(),
           characteristics: data.user?.characteristics || data.characteristics || '',
           createdAt: new Date(data.user?.createdAt || data.createdAt || Date.now())
@@ -109,7 +110,8 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
         
         // API 응답에서 사용자 정보 추출
         const userData: User = {
-          id: data.user?.id || data.id || data.memberId || Date.now().toString(),
+          id: data.user?.id || data.id || data.memberId || userId,
+          memberNum: parseInt(data.user?.memberNum || data.memberNum || data.id, 10) || 0,
           name: data.user?.name || data.name || data.memberName || userId,
           characteristics: data.user?.characteristics || data.characteristics || '',
           createdAt: new Date(data.user?.createdAt || data.createdAt || Date.now())
