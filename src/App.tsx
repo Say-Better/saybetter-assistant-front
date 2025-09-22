@@ -46,17 +46,84 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const startMicRecordingCallbackRef = useRef<(() => void) | null>(null);
 
+  // API에서 대화 기록 불러오기
+  const loadConversationsFromAPI = async () => {
+    try {
+      console.log('대화 기록 불러오기 시작: /api/conversation');
+      const response = await fetch('/api/conversation', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`대화 기록 불러오기 실패: ${response.status}`);
+      }
+
+      const apiConversations = await response.json();
+      
+      // API 응답을 Conversation 형식으로 변환
+      const formattedConversations: Conversation[] = apiConversations.map((apiConv: any) => ({
+        id: apiConv.conversationNum.toString(),
+        title: apiConv.content.substring(0, 30) + (apiConv.content.length > 30 ? '...' : ''),
+        timestamp: new Date(apiConv.createdAt),
+        messages: [{
+          id: `${apiConv.conversationNum}_initial`,
+          type: 'user' as const,
+          text: apiConv.content,
+          timestamp: new Date(apiConv.createdAt)
+        }]
+      }));
+
+      setConversations(formattedConversations);
+      // localStorage에도 저장
+      localStorage.setItem('tts-app-conversations', JSON.stringify(formattedConversations));
+    } catch (error) {
+      console.error('대화 기록 불러오기 오류:', error);
+      // 오류 발생 시 localStorage에서 불러오기
+      const savedConversations = localStorage.getItem('tts-app-conversations');
+      if (savedConversations) {
+        const convs = JSON.parse(savedConversations);
+        setConversations(convs.map((conv: any) => ({
+          ...conv,
+          timestamp: new Date(conv.timestamp),
+          messages: conv.messages.map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }))
+        })));
+      }
+    }
+  };
+
   // Load data from localStorage on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('tts-app-user');
     const savedHistory = localStorage.getItem('tts-app-speech-history');
-    const savedConversations = localStorage.getItem('tts-app-conversations');
 
     if (savedUser) {
       const userData = JSON.parse(savedUser);
       userData.createdAt = new Date(userData.createdAt);
       setUser(userData);
       setCurrentScreen(userData ? 'home' : 'auth');
+      
+      // 사용자가 로그인되어 있으면 API에서 대화 기록 불러오기
+      loadConversationsFromAPI();
+    } else {
+      // 로그인되지 않은 경우에만 localStorage에서 대화 기록 불러오기
+      const savedConversations = localStorage.getItem('tts-app-conversations');
+      if (savedConversations) {
+        const convs = JSON.parse(savedConversations);
+        setConversations(convs.map((conv: any) => ({
+          ...conv,
+          timestamp: new Date(conv.timestamp),
+          messages: conv.messages.map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }))
+        })));
+      }
     }
 
     if (savedHistory) {
@@ -64,18 +131,6 @@ export default function App() {
       setSpeechHistory(history.map((item: any) => ({
         ...item,
         timestamp: new Date(item.timestamp)
-      })));
-    }
-
-    if (savedConversations) {
-      const convs = JSON.parse(savedConversations);
-      setConversations(convs.map((conv: any) => ({
-        ...conv,
-        timestamp: new Date(conv.timestamp),
-        messages: conv.messages.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        }))
       })));
     }
   }, []);
@@ -98,6 +153,8 @@ export default function App() {
 
   const handleLogin = (userData: User) => {
     saveUserData(userData);
+    // 로그인 후 대화 기록 불러오기
+    loadConversationsFromAPI();
     setCurrentScreen('home');
   };
 
@@ -197,10 +254,55 @@ export default function App() {
     }
   };
 
+  // API에 대화 저장하기
+  const saveConversationToAPI = async (conversation: Conversation) => {
+    try {
+      // 사용자가 로그인되어 있지 않으면 저장하지 않음
+      if (!user) {
+        console.log('사용자가 로그인되어 있지 않아 대화를 저장하지 않습니다.');
+        return;
+      }
+      
+      const requestBody = {
+        memberNum: parseInt(user.id || '0'),
+        contents: conversation.messages.map(message => ({
+          content: message.text,
+          speaker: message.type === 'user' ? 'M' : 'O'  // M: TTS(사용자 발화), O: 녹음(AI 응답)
+        }))
+      };
+      console.log('대화 저장 시작: /api/conversation/save', requestBody);
+      console.log('전송할 contents 상세:', JSON.stringify(requestBody.contents, null, 2));
+      
+      const response = await fetch('/api/conversation/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+      
+      console.log('응답 상태:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('에러 응답:', errorText);
+        throw new Error(`대화 저장 실패: ${response.status} - ${errorText}`);
+      }
+
+      console.log('대화가 API에 저장되었습니다.');
+    } catch (error) {
+      console.error('대화 저장 오류:', error);
+    }
+  };
+
   const handleEndConversation = () => {
     if (currentConversation) {
       const updatedConversations = [currentConversation, ...conversations];
       saveConversations(updatedConversations);
+      
+      // API에도 저장
+      saveConversationToAPI(currentConversation);
+      
       setCurrentConversation(null);
       setIsListening(false);
     }
