@@ -76,6 +76,7 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
           memberNum: parseInt(data.user?.memberNum || data.memberNum || data.id, 10) || 0,
           name: data.user?.name || data.name || data.memberName || name.trim(),
           characteristics: data.user?.characteristics || data.characteristics || '',
+          preferSubject: preferSubject.trim(),
           createdAt: new Date(data.user?.createdAt || data.createdAt || Date.now())
         };
         
@@ -114,6 +115,7 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
           memberNum: parseInt(data.user?.memberNum || data.memberNum || data.id, 10) || 0,
           name: data.user?.name || data.name || data.memberName || userId,
           characteristics: data.user?.characteristics || data.characteristics || '',
+          preferSubject: data.user?.preferSubject || data.preferSubject || '',
           createdAt: new Date(data.user?.createdAt || data.createdAt || Date.now())
         };
 

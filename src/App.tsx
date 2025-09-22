@@ -11,6 +11,7 @@ export interface User {
   memberNum: number | string;  // 로그인 응답에서 문자열로 올 수 있음
   name: string;
   characteristics: string;
+  preferSubject?: string;  // 사용자 관심 주제
   createdAt: Date;
 }
 

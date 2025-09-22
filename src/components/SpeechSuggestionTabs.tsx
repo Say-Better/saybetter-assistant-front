@@ -7,10 +7,11 @@ import { Heart, Sparkles, Volume2 } from 'lucide-react';
 interface SpeechSuggestionTabsProps {
   speechHistory: SpeechRecord[];
   aiSuggestions: string[];
+  isLoadingSuggestions?: boolean;
   onSpeak: (text: string) => void;
 }
 
-export function SpeechSuggestionTabs({ speechHistory, aiSuggestions, onSpeak }: SpeechSuggestionTabsProps) {
+export function SpeechSuggestionTabs({ speechHistory, aiSuggestions, isLoadingSuggestions = false, onSpeak }: SpeechSuggestionTabsProps) {
   const favoriteRecords = speechHistory.filter(record => record.isFavorite);
 
   return (
@@ -57,10 +58,17 @@ export function SpeechSuggestionTabs({ speechHistory, aiSuggestions, onSpeak }: 
       <TabsContent value="ai" className="flex-1 min-h-0 overflow-hidden">
         <ScrollArea className="h-full">
           <div className="space-y-2 pb-4">
-            {aiSuggestions.length === 0 ? (
+            {isLoadingSuggestions ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50 animate-pulse" />
+                <p>GPT로 AI 추천을 생성하는 중...</p>
+                <p className="text-xs mt-1">대화 맥락을 분석하고 있습니다</p>
+              </div>
+            ) : aiSuggestions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>AI 추천을 생성하는 중...</p>
+                <p>AI 추천을 불러올 수 없습니다</p>
+                <p className="text-xs mt-1">잠시 후 다시 시도해주세요</p>
               </div>
             ) : (
               aiSuggestions.map((suggestion, index) => (
