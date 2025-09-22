@@ -106,11 +106,45 @@ export default function App() {
     setCurrentScreen('onboarding');
   };
 
-  const handleOnboardingComplete = (characteristics: string) => {
+  const handleOnboardingComplete = async (characteristics: string, preferSubject?: string) => {
     if (user) {
-      const updatedUser = { ...user, characteristics };
-      saveUserData(updatedUser);
-      setCurrentScreen('home');
+      try {
+        // 관심 주제 업데이트 API 호출
+        if (preferSubject?.trim()) {
+          const response = await fetch(`/api/member/${user.id}/preferences`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              preferSubject: preferSubject.trim(),
+            }),
+          });
+
+          console.log('관심 주제 업데이트 요청:', { 
+            memberNum: user.id, 
+            preferSubject: preferSubject.trim() 
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('관심 주제 업데이트 실패:', response.status, errorData);
+          } else {
+            console.log('관심 주제 업데이트 성공');
+          }
+        }
+
+        // 로컬 사용자 정보 업데이트
+        const updatedUser = { ...user, characteristics };
+        saveUserData(updatedUser);
+        setCurrentScreen('home');
+      } catch (error) {
+        console.error('온보딩 완료 처리 중 오류:', error);
+        // 에러가 발생해도 앱 사용은 계속할 수 있도록 함
+        const updatedUser = { ...user, characteristics };
+        saveUserData(updatedUser);
+        setCurrentScreen('home');
+      }
     }
   };
 

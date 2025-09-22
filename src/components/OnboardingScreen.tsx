@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
+import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
 interface OnboardingScreenProps {
-  onComplete: (characteristics: string) => void;
+  onComplete: (characteristics: string, preferSubject?: string) => void;
 }
 
 export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
@@ -13,7 +14,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onComplete(characteristics);
+    onComplete(characteristics, characteristics); // characteristics가 바로 preferSubject
   };
 
   const quickOptions = [
@@ -46,7 +47,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-3">
               <Label htmlFor="characteristics" className="text-lg">
-                사용 목적 및 특징 (선택사항)
+                사용 목적 및 특징
               </Label>
               <p className="text-sm text-muted-foreground">
                 AI가 더 적절한 표현을 추천할 수 있도록 도와주는 정보입니다.
@@ -80,7 +81,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
               <Button 
                 type="button"
                 variant="outline"
-                onClick={() => onComplete('')}
+                onClick={() => onComplete('', '')}
                 className="flex-1 h-12 text-lg"
               >
                 건너뛰기
