@@ -46,7 +46,7 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
           name: name.trim(),
           age: age.trim(),
           gender: gender,
-          preferSubject: "", // 온보딩에서 설정할 예정
+          preferSubject: "none", // 온보딩에서 설정할 예정
         };
         
         console.log('회원가입 요청:', requestBody);
@@ -76,7 +76,7 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
           memberNum: parseInt(data.user?.memberNum || data.memberNum || data.id, 10) || 0,
           name: data.user?.name || data.name || data.memberName || name.trim(),
           characteristics: data.user?.characteristics || data.characteristics || '',
-          preferSubject: preferSubject.trim(),
+          preferSubject: "none",
           createdAt: new Date(data.user?.createdAt || data.createdAt || Date.now())
         };
         
@@ -115,7 +115,7 @@ export function AuthScreen({ onLogin, onSignup }: AuthScreenProps) {
           memberNum: parseInt(data.user?.memberNum || data.memberNum || data.id, 10) || 0,
           name: data.user?.name || data.name || data.memberName || userId,
           characteristics: data.user?.characteristics || data.characteristics || '',
-          preferSubject: data.user?.preferSubject || data.preferSubject || '',
+          preferSubject: data.user?.preferSubject || data.preferSubject || 'none',
           createdAt: new Date(data.user?.createdAt || data.createdAt || Date.now())
         };
 
